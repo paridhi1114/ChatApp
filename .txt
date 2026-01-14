@@ -1,0 +1,104 @@
+import React, { useEffect, useRef } from 'react'
+import Message from './Message'
+import useGetMessage from '../../context/useGetMessage.js';
+import Loading from "../../components/Loading.jsx"
+
+function Messages() {
+  const { loading, messages } = useGetMessage();
+  //useGetSocketMessage(); // listing incoming messages
+  console.log(messages);
+
+  const lastMsgRef=useRef();
+  useEffect(() => {
+    setTimeout(() => {
+      if (lastMsgRef.current) {
+        lastMsgRef.current.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  }, [messages]);
+  return (
+    <div className="" style={{ minHeight: "calc(92vh - 8vh)"}}>
+
+  {loading ? (
+        <Loading />
+      ) : (
+        messages.length > 0 &&
+        messages.map((message) => (
+          <Message key={message._id} message={message}/>
+        )))}
+
+       {!loading && messages.length === 0 && (
+        <div>
+          <p className="text-center mt-[20%]">
+            Say! Hi to start the conversation
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Messages
+
+
+
+..
+import React, { useEffect, useRef } from "react";
+import Message from "./Message";
+import useGetMessage from "../../context/useGetMessage.js";
+import Loading from "../../components/Loading.jsx";
+
+function Messages() {
+  const { loading, messages } = useGetMessage();
+  console.log(messages);
+
+  const lastMsgRef = useRef();
+
+  // Debug _id issues
+  useEffect(() => {
+    const ids = messages.map((m) => m._id);
+    const hasUndefined = ids.includes(undefined);
+    const hasDuplicates = new Set(ids).size !== ids.length;
+
+    console.log("Has undefined _id:", hasUndefined);
+    console.log("Has duplicate _id:", hasDuplicates);
+  }, [messages]);
+
+  // Auto scroll to last message
+  useEffect(() => {
+    setTimeout(() => {
+      if (lastMsgRef.current) {
+        lastMsgRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  }, [messages]);
+
+  return (
+    <div style={{ minHeight: "calc(92vh - 8vh)" }}>
+      {loading ? (
+        <Loading />
+      ) : messages.length > 0 ? (
+        messages.map((message, index) => (
+          <div
+            key={message._id || crypto.randomUUID()} // fallback if _id missing
+            ref={index === messages.length - 1 ? lastMsgRef : null} // attach to last msg
+          >
+            <Message message={message} />
+          </div>
+        ))
+      ) : (
+        !loading && (
+          <div>
+            <p className="text-center mt-[20%]">
+              Say! Hi to start the conversation
+            </p>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+export default Messages;
